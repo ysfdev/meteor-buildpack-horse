@@ -142,29 +142,20 @@ METEOR_NPM_EXIT_CODE=$?
 set -e
 
 # <hack>
+# We'd like to use `meteor node` and `meteor npm`, but they're unreliable.
 # https://github.com/AdmitHub/meteor-buildpack-horse/issues/120
 # https://github.com/meteor/meteor/issues/7338
-METEOR_NPM_EXIT_CODE=1
-# </hack>
-
-if [ $METEOR_NPM_EXIT_CODE -eq 0 ]; then
-  # Newer meteor: it knows how to find its own npm/node.
-  METEOR_NPM="$METEOR npm"
-  echo "-----> Using 'meteor node', with version: `HOME=$METEOR_DIR $METEOR node --version`"
-else
-  # Older meteor: search out npm/node within $METEOR_DIR.
-  BARE_VERSION=`cat $APP_RELEASE | sed -e 's/METEOR@//'`
-  METEOR_NPM=`find $METEOR_DIR -wholename "*$BARE_VERSION*/dev_bundle/bin/npm"`
-  METEOR_NODE=`find $METEOR_DIR -wholename "*$BARE_VERSION*/dev_bundle/bin/node"`
-  if [ -z "$METEOR_NPM" ] || [ -z "$METEOR_NODE" ] ; then
-    echo "FATAL: Can't find npm/node within meteor bundle. This is a bug. Please open an issue at https://github.com/AdmitHub/meteor-buildpack-horse.";
-    exit 1
-  fi
-  # Create link to node for use by bin/release, so it doesn't have to do a
-  # messy `find` with the release version. Use a hard link so that we can move
-  # $METEOR_DIR around without the link breaking.
-  echo "-----> Using searched-for node: `$METEOR_NODE --version`"
+# search out npm/node within $METEOR_DIR.
+BARE_VERSION=`cat $APP_RELEASE | sed -e 's/METEOR@//'`
+METEOR_NPM=`find $METEOR_DIR -wholename "*$BARE_VERSION*/dev_bundle/bin/npm"`
+METEOR_NODE=`find $METEOR_DIR -wholename "*$BARE_VERSION*/dev_bundle/bin/node"`
+if [ -z "$METEOR_NPM" ] || [ -z "$METEOR_NODE" ] ; then
+  echo "FATAL: Can't find npm/node within meteor bundle. This is a bug. Please open an issue at https://github.com/AdmitHub/meteor-buildpack-horse.";
+  exit 1
 fi
+echo "-----> Using searched-for node: `$METEOR_NODE --version`"
+echo "----->   and searched-for npm: `$METEOR_NPM --version`"
+# </hack>
 
 # If we use npm on root, run npm install.  Don't use `--production` here, as we
 # may need devDependencies (e.g. webpack) in order to build the meteor app.
@@ -203,12 +194,10 @@ fi
 mv "$METEOR_DIR" "$APP_CHECKOUT_DIR/meteor-dist"
 
 # Make relative symlink to METEOR_NODE
-if [ -n "$METEOR_NODE" ] ; then
-  METEOR_NODE_RELATIVE=python2.7 -c "import os.path; print os.path.relpath('$METEOR_DIR', '$METEOR_NODE')"
-  cd $APP_CHECKOUT_DIR/meteor-dist
-  ln -s $METEOR_NODE_RELATIVE meteor-node
-  cd $APP_SOURCE_DIR
-fi
+METEOR_NODE_RELATIVE=python2.7 -c "import os.path; print os.path.relpath('$METEOR_DIR', '$METEOR_NODE')"
+cd $APP_CHECKOUT_DIR/meteor-dist
+ln -s $METEOR_NODE_RELATIVE meteor-node
+cd $APP_SOURCE_DIR
 
 #
 # Environment
