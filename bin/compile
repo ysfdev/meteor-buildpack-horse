@@ -163,7 +163,6 @@ else
   # Create link to node for use by bin/release, so it doesn't have to do a
   # messy `find` with the release version. Use a hard link so that we can move
   # $METEOR_DIR around without the link breaking.
-  ln -T $METEOR_NODE $METEOR_DIR/meteor-node
   echo "-----> Using searched-for node: `$METEOR_DIR/meteor-node --version`"
 fi
 
@@ -202,6 +201,14 @@ fi
 
 # Move meteor installation to where we can use it in bin/release
 mv "$METEOR_DIR" "$APP_CHECKOUT_DIR/meteor-dist"
+
+# Make relative symlink to METEOR_NODE
+if [ -n "$METEOR_NODE" ] ; then
+  METEOR_NODE_RELATIVE=python2.7 -c "import os.path; print os.path.relpath('$METEOR_DIR', '$METEOR_NODE')"
+  cd $APP_CHECKOUT_DIR/meteor-dist
+  ln -s $METEOR_NODE_RELATIVE meteor-node
+  cd $APP_SOURCE_DIR
+fi
 
 #
 # Environment
