@@ -112,7 +112,7 @@ echo "-----> Meteor version: `HOME=$METEOR_DIR $METEOR --version`"
 # Build the meteor app!
 #
 echo "-----> Bundling bundle"
-cd $APP_SOURCE_DIR
+cd "$APP_SOURCE_DIR"
 
 # Determine if we have --server-only flag capability. Allow non-zero return from grep.
 echo "-----> Checking if this meteor version supports --server-only"
@@ -153,8 +153,11 @@ if [ -z "$METEOR_NPM" ] || [ -z "$METEOR_NODE" ] ; then
   echo "FATAL: Can't find npm/node within meteor bundle. This is a bug. Please open an issue at https://github.com/AdmitHub/meteor-buildpack-horse.";
   exit 1
 fi
+# Trim whitespace
+METEOR_NPM=`echo "$METEOR_NPM" | sed -e 's/[[:space:]]*$//'`
+METEOR_NODE=`echo "$METEOR_NODE" | sed -e 's/[[:space:]]*$//'`
 echo "-----> Using searched-for node: `$METEOR_NODE --version`"
-echo "----->   and searched-for npm: `$METEOR_NPM --version`"
+echo "----->                 and npm: `$METEOR_NPM --version`"
 # </hack>
 
 # If we use npm on root, run npm install.  Don't use `--production` here, as we
@@ -195,9 +198,9 @@ mv "$METEOR_DIR" "$APP_CHECKOUT_DIR/meteor-dist"
 
 # Make relative symlink to METEOR_NODE
 METEOR_NODE_RELATIVE=python2.7 -c "import os.path; print os.path.relpath('$METEOR_DIR', '$METEOR_NODE')"
-cd $APP_CHECKOUT_DIR/meteor-dist
-ln -s $METEOR_NODE_RELATIVE meteor-node
-cd $APP_SOURCE_DIR
+cd "$APP_CHECKOUT_DIR"/meteor-dist
+ln -s "$METEOR_NODE_RELATIVE" meteor-node
+cd "$APP_SOURCE_DIR"
 
 #
 # Environment
