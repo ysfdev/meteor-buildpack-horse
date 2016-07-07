@@ -163,7 +163,7 @@ else
   # Create link to node for use by bin/release, so it doesn't have to do a
   # messy `find` with the release version. Use a hard link so that we can move
   # $METEOR_DIR around without the link breaking.
-  ln $METEOR_NODE $METEOR_DIR/meteor-node
+  ln -T $METEOR_NODE $METEOR_DIR/meteor-node
   echo "-----> Using searched-for node: `$METEOR_DIR/meteor-node --version`"
 fi
 
