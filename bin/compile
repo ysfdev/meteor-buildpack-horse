@@ -106,6 +106,7 @@ if test "$CUR_RELEASE" != "$APP_RELEASE" ; then
     HOME=$METEOR_DIR $METEOR update --release $APP_RELEASE
   fi
 fi
+echo "-----> Meteor version: `HOME=$METEOR_DIR $METEOR --version`"
 
 #
 # Build the meteor app!
@@ -139,6 +140,13 @@ set +e
 HOME=$METEOR_DIR $METEOR npm --version
 METEOR_NPM_EXIT_CODE=$?
 set -e
+
+# <hack>
+# https://github.com/AdmitHub/meteor-buildpack-horse/issues/120
+# https://github.com/meteor/meteor/issues/7338
+METEOR_NPM_EXIT_CODE=1
+# </hack>
+
 if [ $METEOR_NPM_EXIT_CODE -eq 0 ]; then
   # Newer meteor: it knows how to find its own npm/node.
   METEOR_NPM="$METEOR npm"
@@ -189,6 +197,7 @@ rmdir $BUNDLE_DEST
 if [ -e "$COMPILE_DIR"/app/programs/server/package.json ]; then
   cd "$COMPILE_DIR"/app/programs/server
   HOME=$METEOR_DIR $METEOR_NPM install --production
+  cd "$APP_SOURCE_DIR"
 fi
 
 # Move meteor installation to where we can use it in bin/release
