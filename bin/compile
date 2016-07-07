@@ -137,7 +137,7 @@ fi
 # resort to using `find` to search out the appropriate version within the
 # bundle.
 set +e
-HOME=$METEOR_DIR $METEOR npm --version
+HOME=$METEOR_DIR $METEOR npm --version > /dev/null
 METEOR_NPM_EXIT_CODE=$?
 set -e
 
